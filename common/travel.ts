@@ -196,7 +196,7 @@ export class TravelCalculator {
         }
         const tstart = new Date(travel.stages[stageIndex].departure).valueOf()
         const midnight = (day.date as Date).valueOf() + 1000 * 24 * 60 * 60 - 1
-        while (stageIndex + 1 < travel.stages.length - 1 && midnight > new Date(travel.stages[stageIndex+1].arrival).valueOf()) {
+        while (stageIndex < travel.stages.length - 1 && midnight >= new Date(travel.stages[stageIndex+1].arrival).valueOf()) {
           stageIndex++
         }
         const tend = new Date(travel.stages[stageIndex].arrival).valueOf()
