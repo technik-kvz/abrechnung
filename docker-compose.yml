@@ -4,8 +4,6 @@ services:
       context: ./
       dockerfile: ./backend/Dockerfile.${NODE_ENV}
     restart: always
-    depends_on:
-      - db
     volumes:
       - ./backend:/app
       - ./common:/common
@@ -21,6 +19,8 @@ services:
     restart: always
     volumes:
       - db_data:/data/db
+    profiles:
+      - donetstart
 
   # Uses ningx in production mode see /frontend/Dockerfile.production
   frontend:
@@ -45,6 +45,8 @@ services:
       dockerfile: Dockerfile.${NODE_ENV}
     environment:
       - DEBUG=false
+    profiles:
+      - donetstart
 
   # Test SMTP + mail client only in development mode
   inbucket:
@@ -69,6 +71,8 @@ services:
       - ME_CONFIG_MONGODB_URL=${MONGO_URL}
       - ME_CONFIG_BASICAUTH=false
       - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+    profiles:
+      - donetstart
 
 volumes:
   db_data:
