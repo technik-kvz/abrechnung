@@ -182,6 +182,7 @@ export class TravelCalculator {
   }
 
   async addCateringRefunds(travel: Travel) {
+    let stageIndex = 0
     for (let i = 0; i < travel.days.length; i++) {
       const day = travel.days[i] as TravelDayFullCountry
       if (day.purpose == 'professional') {
@@ -189,11 +190,29 @@ export class TravelCalculator {
         if (i == 0 || i == travel.days.length - 1) {
           result.type = 'catering8'
         }
+        const midnightEarly = (day.date as Date).valueOf()
+        while (stageIndex < travel.stages.length - 1 && midnightEarly > new Date(travel.stages[stageIndex].departure).valueOf()) {
+          stageIndex++
+        }
+        const tstart = new Date(travel.stages[stageIndex].departure).valueOf()
+        const midnight = (day.date as Date).valueOf() + 1000 * 24 * 60 * 60 - 1
+        while (stageIndex + 1 < travel.stages.length - 1 && midnight > new Date(travel.stages[stageIndex+1].arrival).valueOf()) {
+          stageIndex++
+        }
+        const tend = new Date(travel.stages[stageIndex].arrival).valueOf()
+        const tdiff = (tend - tstart) / (1000 * 60 * 60)
+        let factor = 1
+        if ( tdiff < 8 ) {
+            factor = 0
+        } else if (tdiff < 14) {
+            factor = 2 / 3
+        }
         let amount = (await this.lumpSumCalculator.getLumpSum(day.country, day.date as Date, day.special))[result.type!]
         let leftover = 1
         if (day.cateringNoRefund.breakfast) leftover -= this.travelSettings.lumpSumCut.breakfast
         if (day.cateringNoRefund.lunch) leftover -= this.travelSettings.lumpSumCut.lunch
         if (day.cateringNoRefund.dinner) leftover -= this.travelSettings.lumpSumCut.dinner
+        leftover = leftover * factor
 
         result.refund = {
           amount:
@@ -223,7 +242,7 @@ export class TravelCalculator {
           if (i == travel.days.length - 1) {
             break
           }
-          let midnight = (day.date as Date).valueOf() + 1000 * 24 * 60 * 60 - 1
+          const midnight = (day.date as Date).valueOf() + 1000 * 24 * 60 * 60 - 1
           while (stageIndex < travel.stages.length - 1 && midnight - new Date(travel.stages[stageIndex].arrival).valueOf() > 0) {
             stageIndex++
           }
