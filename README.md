@@ -1,6 +1,10 @@
 <h1 align="center">
 abrechnung 🧾
 </h1>
+<h2>Anpassungen im KVZ Fork</h2>
+Im Gesetz- und Vorordnungsblatt für Mecklenburg-Vorpommern Ausgabe 38 / 2021 vom 09.06.2021 werden Details geklärt zur Reisekostenabrechnung bei Reisen < 8 oder < 14 Stunden. Diese Änderungen sind in diesem Fork berücksichtigt.
+Außerdem werden die Container für DB und LDAP nicht verwendet, da diese schon vorhanden sind außerhalb von Docker.
+<h2>Installation und Auslieferung</h2>
 <p align="center">
 <a href="https://github.com/david-loe/abrechnung/actions/workflows/production-build.yml"><img src="https://github.com/david-loe/abrechnung/actions/workflows/production-build.yml/badge.svg" alt="Production Build"></a>
 <a href="https://github.com/david-loe/abrechnung/actions/workflows/migration-test.yml"><img src="https://github.com/david-loe/abrechnung/actions/workflows/migration-test.yml/badge.svg" alt="Migration & Test"></a>
