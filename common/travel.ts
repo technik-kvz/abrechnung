@@ -187,43 +187,45 @@ export class TravelCalculator {
       const day = travel.days[i] as TravelDayFullCountry
       if (day.purpose == 'professional') {
         const result: Partial<Refund> = { type: 'catering24' }
-        if (i == 0 || i == travel.days.length - 1) {
+        if ((i == 0) || (i == travel.days.length - 1)) {
           result.type = 'catering8'
         }
         const midnightEarly = (day.date as Date).valueOf()
         while (stageIndex < travel.stages.length - 1 && midnightEarly > new Date(travel.stages[stageIndex].departure).valueOf()) {
           stageIndex++
         }
-        const tstart = new Date(travel.stages[stageIndex].departure).valueOf()
+        let tstart = new Date(travel.stages[stageIndex].departure).valueOf()
+        if (i > 0) {
+            tstart = midnightEarly;
+        }
         const midnight = (day.date as Date).valueOf() + 1000 * 24 * 60 * 60 - 1
         while (stageIndex < travel.stages.length - 1 && midnight >= new Date(travel.stages[stageIndex+1].arrival).valueOf()) {
           stageIndex++
         }
-        const tend = new Date(travel.stages[stageIndex].arrival).valueOf()
-        const tdiff = (tend - tstart) / (1000 * 60 * 60)
-        let factor = 1
-        if ( tdiff < 8 ) {
-            factor = 0
-        } else if (tdiff < 14) {
-            factor = 2 / 3
+        let tend = new Date(travel.stages[stageIndex].arrival).valueOf()
+        if (i < travel.days.length - 1) {
+            tend = midnight
         }
-        let amount = (await this.lumpSumCalculator.getLumpSum(day.country, day.date as Date, day.special))[result.type!]
-        let leftover = 1
-        if (day.cateringNoRefund.breakfast) leftover -= this.travelSettings.lumpSumCut.breakfast
-        if (day.cateringNoRefund.lunch) leftover -= this.travelSettings.lumpSumCut.lunch
-        if (day.cateringNoRefund.dinner) leftover -= this.travelSettings.lumpSumCut.dinner
-        leftover = leftover * factor
-
+        const tdiff = (tend - tstart) / (1000 * 60 * 60)
+        let sum = 20
+        if ((i == 0) || (i == travel.days.length - 1)) {
+            sum = 10
+            if ( tdiff < 8 ) {
+                sum = 0
+            }
+            else if ( tdiff < 14 ) {
+                sum = 5
+            }
+        }
+        let red = 0
+        if (day.cateringNoRefund.breakfast) red += this.travelSettings.lumpSumCut.breakfast
+        if (day.cateringNoRefund.lunch) red += this.travelSettings.lumpSumCut.lunch
+        if (day.cateringNoRefund.dinner) red += this.travelSettings.lumpSumCut.dinner
+        red = red * 10
+        sum = sum - red
+        if (sum < 0) sum = 0
         result.refund = {
-          amount:
-            Math.round(
-              amount *
-                leftover *
-                ((this.travelSettings.factorCateringLumpSumExceptions as string[]).indexOf(day.country._id) == -1
-                  ? this.travelSettings.factorCateringLumpSum
-                  : 1) *
-                100
-            ) / 100
+          amount: sum
         }
         if (this.travelSettings.allowSpouseRefund && travel.claimSpouseRefund) {
           result.refund.amount! *= 2
@@ -253,16 +255,16 @@ export class TravelCalculator {
             continue
           }
           const result: Partial<Refund> = { type: 'overnight' }
-          let amount = (await this.lumpSumCalculator.getLumpSum(day.country, day.date as Date, day.special))[result.type!]
+          let sum = 20
+          let red = 0
+          if (day.cateringNoRefund.breakfast) red += this.travelSettings.lumpSumCut.breakfast
+          if (day.cateringNoRefund.lunch) red += this.travelSettings.lumpSumCut.lunch
+          if (day.cateringNoRefund.dinner) red += this.travelSettings.lumpSumCut.dinner
+          red = red * 10
+          sum = sum - red
+          if (sum < 0) sum = 0
           result.refund = {
-            amount:
-              Math.round(
-                amount *
-                  (this.travelSettings.factorOvernightLumpSumExceptions.indexOf(day.country._id) == -1
-                    ? this.travelSettings.factorOvernightLumpSum
-                    : 1) *
-                  100
-              ) / 100
+            amount: sum
           }
           if (this.travelSettings.allowSpouseRefund && travel.claimSpouseRefund) {
             result.refund.amount! *= 2
