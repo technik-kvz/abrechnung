@@ -207,14 +207,14 @@ export class TravelCalculator {
             tend = midnight
         }
         const tdiff = (tend - tstart) / (1000 * 60 * 60)
-        let sum = 20
+        let sum = 24
         if ((i == 0) || (i == travel.days.length - 1)) {
-            sum = 10
+            sum = 12
             if ( tdiff < 8 ) {
                 sum = 0
             }
             else if ( tdiff < 14 ) {
-                sum = 5
+                sum = 8
             }
         }
         let red = 0
