@@ -255,7 +255,7 @@ export class TravelCalculator {
             continue
           }
           const result: Partial<Refund> = { type: 'overnight' }
-          let sum = 20
+          let sum = 24
           let red = 0
           if (day.cateringNoRefund.breakfast) red += this.travelSettings.lumpSumCut.breakfast
           if (day.cateringNoRefund.lunch) red += this.travelSettings.lumpSumCut.lunch
